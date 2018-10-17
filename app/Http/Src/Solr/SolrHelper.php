@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Helper;
+namespace App\Http\Src\Solr;
+
+use App\Http\Src\Curl\Curl;
 
 class SolrHelper
 {
@@ -26,6 +28,8 @@ class SolrHelper
 
     protected $searchKeywords;
 
+    protected $insertPath;
+
     public function __construct()
     {
         $this->setUrl();
@@ -33,6 +37,7 @@ class SolrHelper
         $this->setPath();
         $this->setConnection();
         $this->setQuery();
+        $this->setInsertPath();
     }
 
     protected function setConnection()
@@ -58,7 +63,7 @@ class SolrHelper
 
         $this->setQueryString();
 
-        return Curl::get($this->getQueryString(), $format);
+        return Curl::get();
     }
 
     protected function normalizeSpaces(string $string)
@@ -180,5 +185,15 @@ class SolrHelper
     protected function getFormat()
     {
         return $this->format;
+    }
+
+    private function setInsertPath()
+    {
+        $this->insertPath = 'update/json/docs';
+    }
+
+    protected function getInsertPath()
+    {
+        return $this->insertPath;
     }
 }

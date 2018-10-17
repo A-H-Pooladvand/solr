@@ -13,7 +13,8 @@
         "laravel/framework": "5.7.*",
         "laravel/tinker": "^1.0",
         "solarium/solarium": "^4.1",
-        "ext-json": "*"
+        "ext-json": "*",
+        "ext-solr": "*"
     },
     "require-dev": {
         "beyondcode/laravel-dump-server": "^1.0",

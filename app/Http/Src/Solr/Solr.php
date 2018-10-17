@@ -1,9 +1,18 @@
 <?php
 
-namespace App\Http\Helper;
+namespace App\Http\Src\Solr;
+
+use App;
+use App\Http\Src\Curl\Curl;
 
 class Solr extends SolrHelper
 {
+    protected $config;
+
+    protected $index;
+
+    protected $curl;
+
     public function __construct()
     {
         parent::__construct();
@@ -11,6 +20,25 @@ class Solr extends SolrHelper
         $this->select();
 
         $this->take();
+
+        $this->index = App::make(Index::class);
+
+        $this->curl = App::make(Curl::class);
+    }
+
+    public function index()
+    {
+        return new Index;
+    }
+
+    public function document()
+    {
+        return new Document;
+    }
+
+    public function insert(array $data)
+    {
+        return $this->curl->post($this->getConnection() . 'twitter/' . $this->getInsertPath(), $data);
     }
 
     public function all(string $format = 'json')
@@ -69,7 +97,7 @@ class Solr extends SolrHelper
 
     private function normalizeWhereClause($queries)
     {
-        if ( is_string($queries)) {
+        if (is_string($queries)) {
             $this->searchKeywords = $queries;
 
             return $this;
