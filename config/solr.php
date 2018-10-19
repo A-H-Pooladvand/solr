@@ -1,5 +1,5 @@
 <?php
-$solrLocation = '/home/reza/Desktop/solr-7.5.0/';
+$solrLocation = '/home/amirhossein/Desktop/solr-7.5.0/';
 $solrPath = 'server/solr/';
 $solrConfigFolder = 'configsets/_default';
 

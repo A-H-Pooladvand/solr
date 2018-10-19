@@ -83,7 +83,8 @@ class CurlBuilder
 
     public function exec()
     {
-        return curl_exec($this->curlHandle);
+        dd(curl_exec($this->curlHandle));
+        return ;
     }
 
     public function close()

@@ -4,7 +4,7 @@ namespace App\Http\Src\Solr;
 
 use App\Http\Src\Curl\Curl;
 
-class SolrHelper
+class SolrBuilder
 {
     public $url;
 
@@ -14,21 +14,25 @@ class SolrHelper
 
     public $take;
 
-    public $connection;
-
     public $table;
+
+    public $query;
 
     public $format;
 
-    protected $query;
+    public $select;
 
-    protected $queryString;
+    public $schema;
 
-    protected $select;
+    public $insertPath;
 
-    protected $searchKeywords;
+    public $connection;
 
-    protected $insertPath;
+    public $queryString;
+
+    public $searchKeywords;
+
+    public $tableConnection;
 
     public function __construct()
     {
@@ -38,26 +42,37 @@ class SolrHelper
         $this->setConnection();
         $this->setQuery();
         $this->setInsertPath();
+        $this->setSchema();
     }
 
-    protected function setConnection()
+    public function setConnection()
     {
         $this->connection = $this->getUrl() . ':' . $this->getPort() . '/' . $this->getPath() . '/';
 
         return $this;
     }
 
-    protected function getConnection()
+    public function setTableConnection()
+    {
+        $this->tableConnection = $this->getConnection() . $this->getTable() . '/';
+    }
+
+    public function getTableConnection()
+    {
+        return $this->tableConnection;
+    }
+
+    public function getConnection()
     {
         return $this->connection;
     }
 
-    protected function wildcard()
+    public function wildcard()
     {
         return '*:*';
     }
 
-    protected function curlQuery(string $format = 'json')
+    public function curlQuery(string $format = 'json')
     {
         $this->setFormat($format);
 
@@ -66,12 +81,12 @@ class SolrHelper
         return Curl::get();
     }
 
-    protected function normalizeSpaces(string $string)
+    public function normalizeSpaces(string $string)
     {
         return preg_replace('/\s/', '%2B', $string);
     }
 
-    protected function setFormat(string $format = 'json')
+    public function setFormat(string $format = 'json')
     {
         switch ($format) {
             case 'json':
@@ -88,112 +103,137 @@ class SolrHelper
         return $this;
     }
 
-    private function setUrl()
+    public function setUrl()
     {
         $this->url = 'http://' . config('solr.config.url');
 
         return $this;
     }
 
-    private function getUrl()
+    public function getUrl()
     {
         return $this->url;
     }
 
-    private function setPort()
+    public function setPort()
     {
         $this->port = config('solr.config.port');
 
         return $this;
     }
 
-    private function getPort()
+    public function getPort()
     {
         return $this->port;
     }
 
-    private function setPath()
+    public function setPath()
     {
         $this->path = config('solr.config.path');
 
         return $this;
     }
 
-    private function getPath()
+    public function getPath()
     {
         return $this->path;
     }
 
-    private function setQuery()
+    public function setQuery()
     {
         $this->query = 'q=';
 
         return $this;
     }
 
-    private function getQuery()
+    public function getQuery()
     {
         return $this->searchKeywords === null ? $this->query . $this->wildcard() : $this->query;
     }
 
-    private function toJson()
+    public function toJson()
     {
         $this->format .= '&wt=json';
 
         return $this;
     }
 
-    private function toCSV()
+    public function toCSV()
     {
         $this->format .= '&wt=json';
 
         return $this;
     }
 
-    private function toPhp()
+    public function toPhp()
     {
         $this->format .= '&wt=php';
 
         return $this;
     }
 
-    protected function setQueryString()
+    public function setQueryString()
     {
         $this->queryString = $this->getConnection() . $this->getTable() . $this->getSelect() . $this->getQuery() . $this->getTake() . $this->getFormat();
     }
 
-    protected function getQueryString()
+    public function getQueryString()
     {
         return $this->queryString;
     }
 
-    protected function getTable()
+    public function setTable(string $tableName)
+    {
+        $this->table = $tableName;
+
+        $this->setTableConnection();
+
+        return $this;
+    }
+
+    public function getTable()
     {
         return $this->table;
     }
 
-    protected function getTake()
+    public function getTake()
     {
         return $this->take;
     }
 
-    protected function getSelect()
+    public function getSelect()
     {
         return $this->select;
     }
 
-    protected function getFormat()
+    public function getFormat()
     {
         return $this->format;
     }
 
-    private function setInsertPath()
+    public function setInsertPath()
     {
-        $this->insertPath = 'update/json/docs';
+//        /json/docs
+        $this->insertPath = 'update';
     }
 
-    protected function getInsertPath()
+    public function getInsertPath()
     {
-        return $this->insertPath;
+        return $this->getTableConnection() . $this->insertPath;
+    }
+
+    public function setSchema()
+    {
+        $this->schema = 'schema';
+    }
+
+    public function getSchema()
+    {
+        return $this->schema;
+    }
+
+    public function getSchemaConnection()
+    {
+        return $this->getTableConnection() . $this->getSchema();
     }
 }

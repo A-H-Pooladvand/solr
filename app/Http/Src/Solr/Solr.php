@@ -5,25 +5,27 @@ namespace App\Http\Src\Solr;
 use App;
 use App\Http\Src\Curl\Curl;
 
-class Solr extends SolrHelper
+class Solr
 {
-    protected $config;
+    public $config;
 
-    protected $index;
+    public $index;
 
-    protected $curl;
+    public $curl;
+
+    public $builder;
 
     public function __construct()
     {
-        parent::__construct();
+        $this->index = App::make(Index::class);
+
+        $this->curl = App::make(Curl::class);
+
+        $this->builder = App::make(SolrBuilder::class);
 
         $this->select();
 
         $this->take();
-
-        $this->index = App::make(Index::class);
-
-        $this->curl = App::make(Curl::class);
     }
 
     public function index()
@@ -33,29 +35,29 @@ class Solr extends SolrHelper
 
     public function document()
     {
-        return new Document;
+        return new Document($this->builder);
     }
 
-    public function insert(array $data)
+    public function commit()
     {
-        return $this->curl->post($this->getConnection() . 'twitter/' . $this->getInsertPath(), $data);
+        return $this->curl->get($this->builder->getTableConnection() . 'update?commit=true');
     }
 
     public function all(string $format = 'json')
     {
-        $this->where($this->wildcard());
+        $this->where($this->builder->wildcard());
 
-        return $this->curlQuery($format);
+        return $this->builder->curlQuery($format);
     }
 
     public function get(string $format = 'json')
     {
-        return $this->curlQuery($format);
+        return $this->builder->curlQuery($format);
     }
 
     public function table(string $tableName)
     {
-        $this->table = $tableName;
+        $this->builder->setTable($tableName);
 
         return $this;
     }
@@ -64,14 +66,14 @@ class Solr extends SolrHelper
     {
         $this->normalizeWhereClause($queries);
 
-        $query = $this->normalizeSpaces($this->searchKeywords);
+        $query = $this->builder->normalizeSpaces($this->builder->searchKeywords);
 
-        $this->query .= $query;
+        $this->builder->query .= $query;
 
         return $this;
     }
 
-    protected function isAssoc(array $array)
+    public function isAssoc(array $array)
     {
         if (array() === $array) return false;
         return array_keys($array) !== range(0, count($array) - 1);
@@ -83,22 +85,22 @@ class Solr extends SolrHelper
             $fields = 'fl=' . $fields . '&';
         }
 
-        $this->select = '/select?' . $fields;
+        $this->builder->select = '/select?' . $fields;
 
         return $this;
     }
 
     public function take(int $amount = 15)
     {
-        $this->take .= '&rows=' . $amount;
+        $this->builder->take .= '&rows=' . $amount;
 
         return $this;
     }
 
-    private function normalizeWhereClause($queries)
+    public function normalizeWhereClause($queries)
     {
         if (is_string($queries)) {
-            $this->searchKeywords = $queries;
+            $this->builder->searchKeywords = $queries;
 
             return $this;
         }
@@ -108,7 +110,7 @@ class Solr extends SolrHelper
             $queryString .= $key . ':' . $query;
         }
 
-        $this->searchKeywords = $queryString;
+        $this->builder->searchKeywords = $queryString;
 
         return $this;
     }

@@ -41,18 +41,15 @@ class Curl
 
     public function post(string $url, array $data)
     {
-       $data = json_encode($data);
         $this->curl->setPost();
 
-        $this->curl->setData($data);
+        $this->curl->setData(json_encode($data));
 
         $this->curl->setUrl($url);
 
         $response = $this->curl->exec();
 
         $this->curl->close();
-
-        dd($response);
 
         return json_decode($response, true);
     }
